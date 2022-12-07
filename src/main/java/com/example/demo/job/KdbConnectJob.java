@@ -8,19 +8,28 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import java.net.SocketException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
 public class KdbConnectJob {
     private final ObjectPool<c> cObjectPool;
+
     public KdbConnectJob(ObjectPool<c> cObjectPool) {
         this.cObjectPool = cObjectPool;
     }
 
-    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MILLISECONDS)
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     public void connectSchedule() {
-        connect();
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        CountDownLatch latch = new CountDownLatch(100);
+        while (latch.getCount() > 0) {
+            executorService.submit(this::connect);
+            latch.countDown();
+        }
     }
 
     public void connect() {
@@ -36,7 +45,7 @@ public class KdbConnectJob {
             log.info("o: {}, {} ms", new String((char[]) o), stopWatch.getTotalTimeMillis());
             cObjectPool.returnObject(c);
         } catch (Throwable e) {
-            if(c != null) {
+            if (c != null) {
                 try {
                     cObjectPool.invalidateObject(c);
                 } catch (Exception ex) {
