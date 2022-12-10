@@ -42,7 +42,7 @@ public class KdbConnectJob {
             c.k("1");
             Object o = c.k(".j.j (`current`total!(.z.w;count .z.W))");
             stopWatch.stop();
-            log.info("o: {}, {} ms", new String((char[]) o), stopWatch.getTotalTimeMillis());
+            log.info("o: {}, exec {} ms ({} ns)", new String((char[]) o), stopWatch.getTotalTimeMillis(), stopWatch.getTotalTimeNanos());
             cObjectPool.returnObject(c);
         } catch (Throwable e) {
             if (c != null) {
