@@ -32,7 +32,11 @@ public class CPooledObjectFactory extends BasePooledObjectFactory<c> {
     @Override
     public boolean validateObject(PooledObject<c> p) {
         try {
-            p.getObject().k("select 1");
+            c c = p.getObject();
+            if (c.s == null || !c.s.isConnected()) {
+                return false;
+            }
+            c.k("1"); // NOTE: Please read Socket.isConnected()
         } catch (c.KException | IOException e) {
             return false;
         }
